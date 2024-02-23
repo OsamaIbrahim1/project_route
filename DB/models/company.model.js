@@ -1,15 +1,21 @@
-import { Schema, model } from "mongoose";
-const companySchema = new Schema(
+// ! 1 - company.model : numberOfEmployees (type Number) , & i want it as a range (from , to) (-2)
+// ? changes
+import mongoose from "mongoose";
+const companySchema = new mongoose.Schema(
   {
     companyName: { type: String, unique: true, required: true },
     description: { type: String, min: 20, required: true },
     industry: { type: String, required: true },
     address: { type: String, required: true },
-    numberOfEmployees: { type: Number, min: 11, max: 20, required: true },
+    numberOfEmployees: {
+      from: { type: Number, required: true },
+      to: { type: Number, required: true },
+    },
     companyEmail: { type: String, unique: true, required: true },
-    companyHR: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    companyHR: { type: mongoose.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true }
 );
 
-export default model("Company", companySchema);
+export default mongoose.models.Company ||
+  mongoose.model("Company", companySchema);

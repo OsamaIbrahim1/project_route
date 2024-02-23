@@ -2,7 +2,7 @@ import { Router } from "express";
 import { endPointsRoles } from "./company.endPoints.role.js";
 import { validationMiddleWare } from "../../middlewares/validation.middleware.js";
 import expressAsyncHandler from "express-async-handler";
-import * as cc from "./company.controller.js";
+import * as companyController from "./company.controller.js";
 import { auth } from "../../middlewares/authmiddleware.js";
 import {
   addCompanySchema,
@@ -18,41 +18,41 @@ router.post(
   "/addcompany",
   auth(endPointsRoles.HR),
   validationMiddleWare(addCompanySchema),
-  expressAsyncHandler(cc.addCompany)
+  expressAsyncHandler(companyController.addCompany)
 );
 
 router.put(
   "/updateCompany",
   auth(endPointsRoles.HR),
   validationMiddleWare(updatedCompanySchema),
-  expressAsyncHandler(cc.updateCompany)
+  expressAsyncHandler(companyController.updateCompany)
 );
 
 router.delete(
   "/deletecompany",
   auth(endPointsRoles.HR),
   validationMiddleWare(deleteCompanySchema),
-  expressAsyncHandler(cc.deleteCompany)
+  expressAsyncHandler(companyController.deleteCompany)
 );
 
 router.get(
   "/getCompanyData",
   auth(endPointsRoles.HR),
   validationMiddleWare(getCompanyDataSchema),
-  expressAsyncHandler(cc.getCompanyData)
+  expressAsyncHandler(companyController.getCompanyData)
 );
 
 router.get(
   "/getCompanyByName",
   auth(endPointsRoles.userAndHR),
   validationMiddleWare(getCompanyByNameSchema),
-  expressAsyncHandler(cc.getCompanyByName)
+  expressAsyncHandler(companyController.getCompanyByName)
 );
 
 router.get(
   "/getAllApplicationsSpecificJobs",
   auth(endPointsRoles.HR),
   validationMiddleWare(getAllApplicationsSpecificJobsSchema),
-  expressAsyncHandler(cc.getAllApplicationsSpecificJobs)
+  expressAsyncHandler(companyController.getAllApplicationsSpecificJobs)
 );
 export default router;

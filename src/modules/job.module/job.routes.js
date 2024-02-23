@@ -2,7 +2,7 @@ import { Router } from "express";
 import { endPointsRoles } from "./job.endPoints.role.js";
 import { validationMiddleWare } from "../../middlewares/validation.middleware.js";
 import expressAsyncHandler from "express-async-handler";
-import * as jc from "./job.controller.js";
+import * as jobController from "./job.controller.js";
 import { auth } from "../../middlewares/authmiddleware.js";
 import {
   addJobSchema,
@@ -11,6 +11,7 @@ import {
   getAllJobsWithTheirCompanySchema,
   getAllJobsMatchFiltersSchema,
   applyJobSchema,
+  getAllJobsSpecificCompanySchema,
 } from "./job.validation.js";
 import { multerMiddleHost } from "../../middlewares/multer.js";
 import { allowedExtensions } from "../../utils/allowedExtensions.js";
@@ -21,43 +22,44 @@ router.post(
   "/addjob",
   auth(endPointsRoles.HR),
   validationMiddleWare(addJobSchema),
-  expressAsyncHandler(jc.addJob)
+  expressAsyncHandler(jobController.addJob)
 );
 
 router.put(
   "/updatejob",
   auth(endPointsRoles.HR),
   validationMiddleWare(updatedJobSchema),
-  expressAsyncHandler(jc.updateJob)
+  expressAsyncHandler(jobController.updateJob)
 );
 
 router.delete(
   "/deletejob",
   auth(endPointsRoles.HR),
   validationMiddleWare(deleteJobSchema),
-  expressAsyncHandler(jc.deleteJob)
+  expressAsyncHandler(jobController.deleteJob)
 );
 
 router.get(
   "/getAllJobsWithTheirCompany",
   auth(endPointsRoles.userAndHR),
   validationMiddleWare(getAllJobsWithTheirCompanySchema),
-  expressAsyncHandler(jc.getAllJobsWithTheirCompany)
+  expressAsyncHandler(jobController.getAllJobsWithTheirCompany)
 );
 
 router.get(
   "/getAllJobsSpecificCompany",
   auth(endPointsRoles.userAndHR),
-  validationMiddleWare(getAllJobsWithTheirCompanySchema),
-  expressAsyncHandler(jc.getAllJobsSpecificCompany)
+  validationMiddleWare(getAllJobsSpecificCompanySchema),
+  expressAsyncHandler(jobController.getAllJobsSpecificCompany)
 );
 
 router.get(
   "/getAllJobsMatchFilters",
   auth(endPointsRoles.userAndHR),
   validationMiddleWare(getAllJobsMatchFiltersSchema),
-  expressAsyncHandler(jc.getAllJobsMatchFilters)
+  expressAsyncHandler(jobController.getAllJobsMatchFilters)
 );
+
 router.post(
   "/applyJob",
   auth(endPointsRoles.user),
@@ -65,6 +67,7 @@ router.post(
     extensions: allowedExtensions.document,
   }).single("cv"),
   validationMiddleWare(applyJobSchema),
-  expressAsyncHandler(jc.applyJob)
+  expressAsyncHandler(jobController.applyJob)
 );
+
 export default router;

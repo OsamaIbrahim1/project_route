@@ -24,7 +24,6 @@ const jobSchema = new Schema({
   technicalSkills: [{ type: String, required: true }],
   softSkills: [{ type: String, required: true }],
   addedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  companyId: { type: Schema.Types.ObjectId, ref: "Company", required: true },
 });
 
 export default model("Job", jobSchema);

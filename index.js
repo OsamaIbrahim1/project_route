@@ -1,9 +1,9 @@
 import express from "express";
 import db_connection from "./DB/db_connection.js";
 import { config } from "dotenv";
-import userRouter from "./src/modules/user.module/user.route.js";
-import companyRouter from "./src/modules/company.module/company.route.js";
-import jobRouter from "./src/modules/job.module/job.route.js";
+import userRouter from "./src/modules/user.module/user.routes.js";
+import companyRouter from "./src/modules/company.module/company.routes.js";
+import jobRouter from "./src/modules/job.module/job.routes.js";
 import { globalResponse } from "./src/middlewares/globalResponse.js";
 config({ path: `./config/dev.config.env` });
 

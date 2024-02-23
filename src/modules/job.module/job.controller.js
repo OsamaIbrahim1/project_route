@@ -1,4 +1,3 @@
-import { response } from "express";
 import Company from "../../../DB/models/company.model.js";
 import Job from "../../../DB/models/job.model.js";
 import User from "../../../DB/models/user.model.js";
@@ -14,6 +13,7 @@ import generateUniqueString from "../../utils/generateUniqueString.js";
  * * create new Job and check is created
  * * response successfully
  */
+// ? changes
 export const addJob = async (req, res, next) => {
   // * destructing data from req.body and req.headers
   const {
@@ -24,18 +24,8 @@ export const addJob = async (req, res, next) => {
     jobDescription,
     technicalSkills,
     softSkills,
-    addedBy,
-    companyId,
   } = req.body;
   const { _id } = req.authUser;
-
-  // * check user already exists (addedBy)
-  const user = await User.findById({ _id: addedBy });
-  if (!user) return next(new Error("User not found", { cause: 400 }));
-
-  // * check company already exists (companyId)
-  const company = await Company.findById({ _id: companyId });
-  if (!company) return next(new Error("Company not found", { cause: 400 }));
 
   // * create new Job and check is created
   const job = await Job.create({
@@ -46,24 +36,25 @@ export const addJob = async (req, res, next) => {
     jobDescription,
     technicalSkills,
     softSkills,
-    addedBy,
-    companyId,
+    addedBy: _id,
   });
   if (!job) return next(new Error("Job not created", { cause: 400 }));
 
   // * response successfully
-  res.status(200).json({ message: "Job created successfully", job });
+  res
+    .status(201)
+    .json({ success: true, message: "Job created successfully", data: job });
 };
 
 //================================== Update Job ==================================//
 /**
  * * destructing data from req.body and req.headers and req.query
  * * check if companyId already exists
- * * check if addedBy === _id <= user logged in
- * * check company already exists (companyId)
- * * update job and check if job updated successfully
+ * * check if you want to update jobTitle jobLocation workingTime seniorityLevel jobDescription technicalSkills softSkills
+ * * save all updates
  * * response successfully
  */
+// ? chenges
 export const updateJob = async (req, res, next) => {
   // * destructing data from req.body and req.headers and req.query
   const {
@@ -74,42 +65,27 @@ export const updateJob = async (req, res, next) => {
     jobDescription,
     technicalSkills,
     softSkills,
-    companyId,
   } = req.body;
-  const { _id } = req.authUser;
   const { jobId } = req.query;
 
   // * check if jobId already exists
   const job = await Job.findById({ _id: jobId });
   if (!job) return next(new Error("job not found", { cause: 400 }));
-  console.log(job);
-  console.log(_id);
-  // * check if addedBy === _id <= user logged in
-  if (!_id.equals(job.addedBy))
-    return next(new Error("cant update job", { cause: 400 }));
 
-  // * check company already exists (companyId)
-  const company = await Company.findById({ _id: companyId });
-  if (!company) return next(new Error("Company not found", { cause: 400 }));
+  // * check if you want to update jobTitle jobLocation workingTime seniorityLevel jobDescription technicalSkills softSkills
+  if (jobTitle) job.jobTitle = jobTitle;
+  if (jobLocation) job.jobLocation = jobLocation;
+  if (workingTime) job.workingTime = workingTime;
+  if (seniorityLevel) job.seniorityLevel = seniorityLevel;
+  if (jobDescription) job.jobDescription = jobDescription;
+  if (technicalSkills) job.technicalSkills = technicalSkills;
+  if (softSkills) job.softSkills = softSkills;
 
-  // * update job and check if job updated successfully
-  const jobUpdated = await Job.findByIdAndUpdate(
-    { _id: jobId },
-    {
-      jobTitle,
-      jobLocation,
-      workingTime,
-      seniorityLevel,
-      jobDescription,
-      technicalSkills,
-      softSkills,
-      companyId,
-    }
-  );
-  if (!jobUpdated) return next(new Error("job not updated", { cause: 400 }));
+  // * save all updates
+  await job.save();
 
   // * response successfully
-  res.status(200).json({ message: "updated Job", jobUpdated });
+  res.status(200).json({ success: true, message: "updated Job", job });
 };
 
 //================================== Delete Company ==================================//
@@ -117,8 +93,10 @@ export const updateJob = async (req, res, next) => {
  * * destructing data from req.headers and req.query
  * * find the job and check if the User is Owner
  * * delete job and check is deleted
+ * * delete application for this job
  * * response successfully
  */
+// ? chenges
 export const deleteJob = async (req, res, next) => {
   // * destructing data from req.headers and req.query
   const { _id } = req.authUser;
@@ -133,60 +111,80 @@ export const deleteJob = async (req, res, next) => {
   const jobDeleted = await Job.findByIdAndDelete({ _id: jobId });
   if (!jobDeleted) return next(new Error("deleted faild", { cause: 400 }));
 
+  // ? chenge
+  // * delete application for this job
+  await Application.deleteMany({ jobId });
+
   // * response successfully
-  res.status(200).json({ message: "deleted success", jobDeleted });
+  res
+    .status(200)
+    .json({ success: true, message: "deleted success", jobDeleted });
 };
 
 //================================== Get All Jobs With Their Company ==================================//
 /**
- * * destructing data from req.headers
- * * Get all Jobs with their company’s information
+ * * all companies with their jobs
  * * response successfully
  */
+// ! 19 - getAllJobsWithTheirCompany :  you use companyId to find job ,
+// ! i want another logic  (see number 2 )   (-1.5) =>? method populate
+// ? changes
 export const getAllJobsWithTheirCompany = async (req, res, next) => {
-  // * destructing data from req.headers
-  const { _id } = req.authUser;
+  // * all companies with their jobs
+  let allCompaiesWithJobs = [];
+  const companies = await Company.find();
+  for (const key of companies) {
+    const jobs = await Job.find({ addedBy: key.companyHR });
+    jobs.unshift(key);
+    allCompaiesWithJobs.push(jobs);
+  }
 
-  // * Get all Jobs with their company’s information
-  const jobs = await Job.find().populate([{ path: "companyId" }]);
-  if (!jobs.length) return next(new Error("No Jobs found", { cause: 400 }));
   // * response successfully
-  res.status(200).json({ message: "Successfully", jobs });
+  res.status(200).json({
+    success: true,
+    message: "get data Successfully",
+    allCompaiesWithJobs,
+  });
 };
 
 //================================== Get All Jobs For a Specific Company ==================================//
 /**
- * * destructing data from req.headers and req.query
+ * * destructing data from req.query
  * * check company name already exists
- * * find All Jobs For a Specific Company
+ * * find All Jobs For a Specific Company by companyHR
  * * response successfully
  */
+// ! 20 - getAllJobsSpecificCompany :  you use companyId to find job ,
+// ! i want another logic  (see number 2 ) (-1.5)
+// ? changes
 export const getAllJobsSpecificCompany = async (req, res, next) => {
-  // * destructing data from req.headers and req.query
-  const { _id } = req.authUser;
+  // * destructing data from req.query
   const { companyName } = req.query;
 
   // * check company name already exists
   const company = await Company.findOne({ companyName });
   if (!company) return next(new Error("Company not found", { cause: 400 }));
-  console.log(company.id);
-  // * find All Jobs For a Specific Company
-  const jobs = await Job.find({ companyId: company._id });
+
+  // * find All Jobs For a Specific Company by companyHR
+  const jobs = await Job.find({ addedBy: company.companyHR });
   if (!jobs.length)
     return next(
       new Error(`Job not found for this company ${companyName}`, { cause: 400 })
     );
 
   // * response successfully
-  res.status(200).json({ message: "Success", jobs });
+  res.status(200).json({ success: true, message: "Success", data: jobs });
 };
 
 //====================== Get All Jobs That Match The Following Filters  =====================//
 /**
- *
+ * * destructing data from req.body
+ * * filter jobs
+ * * response successfully
  */
+// ? change
 export const getAllJobsMatchFilters = async (req, res, next) => {
-  // * destructing data from req.body and req.headers
+  // * destructing data from req.body
   const {
     workingTime,
     jobLocation,
@@ -194,11 +192,10 @@ export const getAllJobsMatchFilters = async (req, res, next) => {
     jobTitle,
     technicalSkills,
   } = req.body;
-  const { _id } = req.authUser;
 
   // * filter jobs
   const findJob = await Job.find({
-    $or: [
+    $and: [
       { workingTime },
       { jobLocation },
       { seniorityLevel },
@@ -206,10 +203,12 @@ export const getAllJobsMatchFilters = async (req, res, next) => {
       { technicalSkills },
     ],
   });
-  if (!findJob.length) return next(new Error("Job not found", { cause: 400 }));
+  if (!findJob.length) {
+    return next(new Error("Job not found", { cause: 400 }));
+  }
 
   // * response successfully
-  res.status(200).json({ message: "Jobs found", findJob });
+  res.status(200).json({ success: true, message: "Jobs found", data: findJob });
 };
 
 //================================== Apply to Job ==================================//
@@ -222,6 +221,8 @@ export const getAllJobsMatchFilters = async (req, res, next) => {
  * * add application and check is created
  * * response successful
  */
+// ! 22 - applyJob : when application fail delete resume from cloudinary (-2)
+// ? change
 export const applyJob = async (req, res, next) => {
   // * destructing data from req.body and req.headers and req.file
   const { jobId, userTechSkills, userSoftSkills } = req.body;
@@ -241,7 +242,7 @@ export const applyJob = async (req, res, next) => {
   // * get secure_url and public_id and folderId
   const { secure_url, public_id } =
     await cloudinaryConnection().uploader.upload(req.file.path, {
-      folder: `/cvs/${job.companyId}/${_id}/${folderId}`,
+      folder: `cvs/${jobId}/${_id}/${folderId}`,
     });
   const cv = [{ secure_url, public_id, folderId }];
   if (!cv) return next(new Error("cv not uploaded", { cause: 400 }));
@@ -254,9 +255,16 @@ export const applyJob = async (req, res, next) => {
     userSoftSkills,
     userResume: cv,
   });
-  if (!application)
+  if (!application) {
+    await cloudinaryConnection().uploader.destroy(public_id);
+    await cloudinaryConnection().api.delete_folder(
+      `cvs/${jobId}/${_id}/${folderId}`
+    );
     return next(new Error("Application not created", { cause: 400 }));
+  }
 
   // * response successful
-  res.status(200).json({ message: "Application created", application });
+  res
+    .status(201)
+    .json({ success: true, message: "Application created", data: application });
 };

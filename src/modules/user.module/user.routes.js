@@ -1,83 +1,88 @@
 import { Router } from "express";
 import expressAsyncHandler from "express-async-handler";
-import * as uc from "./user.controller.js";
+import * as userController from "./user.controller.js";
 import { validationMiddleWare } from "../../middlewares/validation.middleware.js";
 import {
+  deleteSchema,
   forgetPasswordSchema,
   getAllAccountsAssociatedSchema,
+  getProfileDataForAnotherUserSchema,
+  getUserAccountDataSchema,
   resetPasswordAfterOTPSchema,
   signInSchema,
   signUpSchema,
   updatePasswordSchema,
-  update_delete_getUserData_Schema,
+  updateSchema,
 } from "./user.validationSchema.js";
 import { auth } from "../../middlewares/authmiddleware.js";
 import { endPointsRoles } from "./user.endPoints.role.js";
 
 const router = Router();
 
-router.post(
+router.post( 
   "/signup",
   validationMiddleWare(signUpSchema),
-  expressAsyncHandler(uc.signUp)
+  expressAsyncHandler(userController.signUp)
 );
+
 router.post(
   "/signIn",
   validationMiddleWare(signInSchema),
-  expressAsyncHandler(uc.signIn)
+  expressAsyncHandler(userController.signIn)
 );
 
 router.put(
   "/update",
   auth(endPointsRoles.userAndHR),
-  validationMiddleWare(update_delete_getUserData_Schema),
-  expressAsyncHandler(uc.updateAccount)
+  validationMiddleWare(updateSchema),
+  expressAsyncHandler(userController.updateAccount)
 );
 
 router.delete(
   "/delete",
   auth(endPointsRoles.userAndHR),
-  validationMiddleWare(update_delete_getUserData_Schema),
-  expressAsyncHandler(uc.deleteAccount)
+  validationMiddleWare(deleteSchema),
+  expressAsyncHandler(userController.deleteAccount)
 );
 
 router.get(
   "/getuserdata",
   auth(endPointsRoles.userAndHR),
-  validationMiddleWare(update_delete_getUserData_Schema),
-  expressAsyncHandler(uc.getUserAccountData)
+  validationMiddleWare(getUserAccountDataSchema),
+  expressAsyncHandler(userController.getUserAccountData)
 );
 
 router.get(
   "/getanotheuserdata",
   auth(endPointsRoles.userAndHR),
-  validationMiddleWare(update_delete_getUserData_Schema),
-  expressAsyncHandler(uc.getProfileDataForAnotherUser)
+  validationMiddleWare(getProfileDataForAnotherUserSchema),
+  expressAsyncHandler(userController.getProfileDataForAnotherUser)
 );
 
 router.patch(
   "/updatepassword",
   auth(endPointsRoles.userAndHR),
   validationMiddleWare(updatePasswordSchema),
-  expressAsyncHandler(uc.updatePassword)
+  expressAsyncHandler(userController.updatePassword)
 );
 
 router.get(
   "/forgetPassword",
   validationMiddleWare(forgetPasswordSchema),
-  expressAsyncHandler(uc.forgetPassword)
+  expressAsyncHandler(userController.forgetPassword)
 );
 
 router.patch(
   "/resetPasswordAfterOTP",
   validationMiddleWare(resetPasswordAfterOTPSchema),
-  expressAsyncHandler(uc.resetPasswordAfterOTP)
+  expressAsyncHandler(userController.resetPasswordAfterOTP)
 );
+
 router.get(
   "/getAllAccountsAssociated",
   auth(endPointsRoles.userAndHR),
   validationMiddleWare(getAllAccountsAssociatedSchema),
-  expressAsyncHandler(uc.getAllAccountsAssociated)
+  expressAsyncHandler(userController.getAllAccountsAssociated)
 );
 
 export default router;

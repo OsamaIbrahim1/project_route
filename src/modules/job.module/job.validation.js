@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { Types } from "mongoose";
+import { generalRules } from "../../utils/general.validation.rule.js";
 
 const objectIdValidation = (value, helper) => {
   const isValid = Types.ObjectId.isValid(value);
@@ -24,9 +25,8 @@ export const addJobSchema = {
     jobDescription: Joi.string().min(20).required(),
     technicalSkills: Joi.array().required(),
     softSkills: Joi.array().required(),
-    addedBy: Joi.string().custom(objectIdValidation).required(),
-    companyId: Joi.string().custom(objectIdValidation).required(),
   }),
+  headers: generalRules.headersRules,
 };
 
 export const updatedJobSchema = {
@@ -44,74 +44,29 @@ export const updatedJobSchema = {
     jobDescription: Joi.string().min(20),
     technicalSkills: Joi.array(),
     softSkills: Joi.array(),
-    companyId: Joi.string().custom(objectIdValidation),
   }),
   query: Joi.object({
-    jobId: Joi.string().custom(objectIdValidation).required(),
+    jobId: generalRules.dbId,
   }),
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
 
 export const deleteJobSchema = {
   query: Joi.object({
-    jobId: Joi.string().custom(objectIdValidation).required(),
+    jobId: generalRules.dbId,
   }),
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
 
 export const getAllJobsWithTheirCompanySchema = {
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
 
 export const getAllJobsSpecificCompanySchema = {
   query: Joi.object({
     companyName: Joi.string().required(),
   }),
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
 
 export const getAllJobsMatchFiltersSchema = {
@@ -126,8 +81,8 @@ export const getAllJobsMatchFiltersSchema = {
 
 export const applyJobSchema = {
   body: Joi.object({
-    jobId: Joi.string().custom(objectIdValidation).required(),
-    userId: Joi.string().custom(objectIdValidation),
+    jobId: generalRules.dbId,
+    userId: generalRules.dbId,
     userTechSkills: Joi.array().required(),
     userSoftSkills: Joi.array().required(),
   }),

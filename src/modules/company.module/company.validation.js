@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { Types } from "mongoose";
+import { generalRules } from "../../utils/general.validation.rule.js";
 
 const objectIdValidation = (value, helper) => {
   const isValid = Types.ObjectId.isValid(value);
@@ -11,10 +12,16 @@ export const addCompanySchema = {
     description: Joi.string().min(20).required(),
     industry: Joi.string().required(),
     address: Joi.string().required(),
-    numberOfEmployees: Joi.number().min(11).max(20).required(),
+    numberOfEmployees: Joi.object({
+      from: Joi.number().required(),
+      to: Joi.number()
+        .required()
+        .greater(Joi.ref("from"))
+        .message('"to" must be greater than "from"'),
+    }),
     companyEmail: Joi.string().required(),
-    companyHR: Joi.string().custom(objectIdValidation).required(),
   }),
+  headers: generalRules.headersRules,
 };
 
 export const updatedCompanySchema = {
@@ -23,47 +30,31 @@ export const updatedCompanySchema = {
     description: Joi.string().min(20),
     industry: Joi.string(),
     address: Joi.string(),
-    numberOfEmployess: Joi.number().min(11).max(20),
-    companyEmail: Joi.string(),
+    numberOfEmployess: Joi.object({
+      from: Joi.number().greater(10),
+      to: Joi.number()
+        .less(21)
+        .greater(Joi.ref("from"))
+        .message('"to" must be greater than "from"'),
+    }),
+    companyEmail: Joi.string().email(),
   }),
   query: Joi.object({
-    companyId: Joi.string().custom(objectIdValidation).required(),
+    companyId: generalRules.dbId,
   }),
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
 
 export const deleteCompanySchema = {
   query: Joi.object({
-    companyId: Joi.string().custom(objectIdValidation).required(),
+    companyId: generalRules.dbId,
   }),
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
 
 export const getCompanyDataSchema = {
   query: Joi.object({
-    companyId: Joi.string().custom(objectIdValidation).required(),
+    companyId: generalRules.dbId,
   }),
 };
 
@@ -71,31 +62,9 @@ export const getCompanyByNameSchema = {
   body: Joi.object({
     companyName: Joi.string().required(),
   }),
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
 
 export const getAllApplicationsSpecificJobsSchema = {
-  headers: Joi.object({
-    accesstoken: Joi.string().required(),
-    "postman-token": Joi.string(),
-    "cache-control": Joi.string(),
-    host: Joi.string(),
-    "content-type": Joi.string(),
-    "content-length": Joi.string(),
-    "user-agent": Joi.string(),
-    accept: Joi.string(),
-    "accept-encoding": Joi.string(),
-    connection: Joi.string(),
-  }),
+  headers: generalRules.headersRules,
 };
